@@ -13,8 +13,10 @@ layout: default
       </time>
       {% assign author = page.author | default: site.author %}
       {%- if author -%}
-        • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">{{ author }}</span></span>
-      {%- endif -%}</p>
+      • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card"
+          itemprop="name">{{ author }}</span></span>
+      {%- endif -%}
+    </p>
   </header>
 
   <div class="share-links">
@@ -25,6 +27,8 @@ layout: default
     {{ content }}
     {% include navlinks.html %}
   </div>
-
+  <script src="https://utteranc.es/client.js" repo="summerxwu/summerxwu.github.io" issue-term="pathname"
+    theme="github-light" crossorigin="anonymous" async>
+    </script>
   <a class="u-url" href="{{ page.url | relative_url }}" hidden></a>
 </article>
