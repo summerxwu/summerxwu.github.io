@@ -27,8 +27,8 @@ layout: default
     {{ content }}
     {% include navlinks.html %}
   </div>
-  <script src="https://utteranc.es/client.js" repo="summerxwu/summerxwu.github.io" issue-term="pathname"
-    label="Comments" theme="github-light" crossorigin="anonymous" async>
-    </script>
+  {% if site.comments_repo %}
+  {% include comments.html %}
+  {% endif %}
   <a class="u-url" href="{{ page.url | relative_url }}" hidden></a>
 </article>
