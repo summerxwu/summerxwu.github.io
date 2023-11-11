@@ -2,17 +2,34 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://example.org/posts/</loc>
-    <lastmod>2023-11-07T11:11:07+08:00</lastmod>
+    <loc>https://example.org/about/</loc>
+    <lastmod>2023-11-11T22:06:28+08:00</lastmod>
   </url><url>
-    <loc>https://example.org/</loc>
+    <loc>https://example.org/posts/</loc>
     <lastmod>2023-11-07T11:11:07+08:00</lastmod>
   </url><url>
     <loc>https://example.org/posts/summerxwu-first-post/</loc>
     <lastmod>2023-11-07T11:11:07+08:00</lastmod>
   </url><url>
+    <loc>https://example.org/</loc>
+    <lastmod>2023-11-07T11:11:07+08:00</lastmod>
+  </url><url>
     <loc>https://example.org/categories/</loc>
+    <lastmod>2023-08-13T13:07:13+08:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/key-value/</loc>
+    <lastmod>2023-08-13T13:07:13+08:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/leveldb/</loc>
+    <lastmod>2023-08-13T13:07:13+08:00</lastmod>
+  </url><url>
+    <loc>https://example.org/posts/lsm-tree-leveldb/</loc>
+    <lastmod>2023-08-13T13:07:13+08:00</lastmod>
+  </url><url>
+    <loc>https://example.org/categories/storage-engine/</loc>
+    <lastmod>2023-08-13T13:07:13+08:00</lastmod>
   </url><url>
     <loc>https://example.org/tags/</loc>
+    <lastmod>2023-08-13T13:07:13+08:00</lastmod>
   </url>
 </urlset>

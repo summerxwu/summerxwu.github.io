@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Summer Xia W.</title>
+    <title>Summerxwu Xia W.</title>
     <link>https://example.org/</link>
-    <description>Recent content on Summer Xia W.</description>
+    <description>Recent content on Summerxwu Xia W.</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 07 Nov 2023 11:11:07 +0800</lastBuildDate>
     <atom:link href="https://example.org/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>About</title>
+      <link>https://example.org/about/</link>
+      <pubDate>Sat, 11 Nov 2023 22:06:28 +0800</pubDate>
+      <guid>https://example.org/about/</guid>
+      <description>Hi there 👋 My name is Wu Xia (吴夏). Friends of mine call me summer. 👋 I am a software engineer based in Shenzhen, China. I previously worked at Tencent for five years, and now, I work in a Database startup company ZettaDB. This is my Email. Feel free to reach me with any questions. Happy to see you all. 😀 </description>
+    </item>
     <item>
       <title>Summerxwu First Post</title>
       <link>https://example.org/posts/summerxwu-first-post/</link>
@@ -15,6 +22,13 @@
       <guid>https://example.org/posts/summerxwu-first-post/</guid>
       <description>Introduction This is bold text, and this is emphasized text.
 Visit the Hugo website!</description>
+    </item>
+    <item>
+      <title>LSM Tree存储引擎分析 以LevelDB为例</title>
+      <link>https://example.org/posts/lsm-tree-leveldb/</link>
+      <pubDate>Sun, 13 Aug 2023 13:07:13 +0800</pubDate>
+      <guid>https://example.org/posts/lsm-tree-leveldb/</guid>
+      <description></description>
     </item>
   </channel>
 </rss>
