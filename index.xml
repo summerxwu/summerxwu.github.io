@@ -6,22 +6,14 @@
     <description>Recent content on Summerxwu Xia W.</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 07 Nov 2023 11:11:07 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 13 Aug 2023 13:07:13 +0800</lastBuildDate>
     <atom:link href="https://example.org/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>About</title>
+      <title>About me</title>
       <link>https://example.org/about/</link>
       <pubDate>Sat, 11 Nov 2023 22:06:28 +0800</pubDate>
       <guid>https://example.org/about/</guid>
       <description>Hi there 👋 My name is Wu Xia (吴夏). Friends of mine call me summer. 👋 I am a software engineer based in Shenzhen, China. I previously worked at Tencent for five years, and now, I work in a Database startup company ZettaDB. This is my Email. Feel free to reach me with any questions. Happy to see you all. 😀 </description>
-    </item>
-    <item>
-      <title>Summerxwu First Post</title>
-      <link>https://example.org/posts/summerxwu-first-post/</link>
-      <pubDate>Tue, 07 Nov 2023 11:11:07 +0800</pubDate>
-      <guid>https://example.org/posts/summerxwu-first-post/</guid>
-      <description>Introduction This is bold text, and this is emphasized text.
-Visit the Hugo website!</description>
     </item>
     <item>
       <title>LSM Tree存储引擎分析 以LevelDB为例</title>
