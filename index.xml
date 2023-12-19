@@ -6,8 +6,15 @@
     <description>Recent content on Summerxwu Xia W.</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 12 Nov 2023 12:42:37 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 19 Dec 2023 10:44:44 +0800</lastBuildDate>
     <atom:link href="https://summerxwu.me/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>MySQL Binary Log Group Commit</title>
+      <link>https://summerxwu.me/posts/mysql_group_commit/</link>
+      <pubDate>Tue, 19 Dec 2023 10:44:44 +0800</pubDate>
+      <guid>https://summerxwu.me/posts/mysql_group_commit/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Kunlunbase 全局一致性恢复</title>
       <link>https://summerxwu.me/posts/kunlunbase_global_consistent_restore/</link>

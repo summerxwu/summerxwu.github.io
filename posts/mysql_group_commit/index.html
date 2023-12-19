@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>MySQL Binary Log Group Commit - Summerxwu Xia W.</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700">
+
+	<link rel="stylesheet" href="/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo">
+		<a class="logo__link" href="/" title="Summerxwu Xia W." rel="home">
+			<div class="logo__item logo__text">
+					<div class="logo__title">Summerxwu Xia W.</div>
+					
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/about/">
+				
+				<span class="menu__text">About me</span>
+				
+			</a>
+		</li>
+		<li class="menu__item menu__item--active">
+			<a class="menu__link" href="/posts/">
+				
+				<span class="menu__text">Posts</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">MySQL Binary Log Group Commit</h1>
+			<div class="post__meta meta">
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-12-19T10:44:44&#43;08:00">December 19, 2023</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/categories/storage-engine/" rel="category">storage engine</a>
+	</span>
+</div></div>
+		</header>
+		<div class="content post__content clearfix">
+			<h1 id="1-what-is-binary-log">1. What is binary log?</h1>
+<p>MySQL is a multi-engine architecture database, which means it supports more than one storage engine during transaction processing.</p>
+<p>The Binary Log is a server-level log that records every modification issued by the client at the storage engine level. This log is an important facility in the MySQL ecosystem for propagating data modifications to replicas or other systems. Therefore, it is crucial to ensure the accuracy of the binary log in order to maintain consistency between replicas or other systems.</p>
+<p>The criterion for determining the correctness of the binary log is that all records in the binary log must be consistent with the associated storage engines. Any modifications made in the binary logs must be committed in the corresponding storage engines.</p>
+<h1 id="2-how-the-binary-log-works-and-why-it-becomes-a-bottleneck">2. How the binary log works and why it becomes a bottleneck?</h1>
+<p>First, let&rsquo;s understand how and when the binary log is written. (The procedure described below applies to MySQL 5.6 and earlier versions.)</p>
+<p>Every connection handling thread has a designated cache for binary log records. During transaction processing, before committing, every successfully executed statement issued by the client will generate binary log content and write it to this buffer.</p>
+<p>After client issuing commit, innodb as the storage engine, steps is listed below:</p>
+<ol>
+<li>Prepare in innodb, write innodb prepare log and sync.</li>
+<li>Write binlog content and append commit mark in binary log and invoke fsync().</li>
+<li>Commit in innodb, write innodb commit log and sync.</li>
+</ol>
+<p>During crash-safe operation, if a crash occurs between steps 2 and 3, any transaction that is prepared but not committed in InnoDB will be examined based on the binary log. If the transaction is marked as committed in the binary log, InnoDB will re-commit the transaction. Otherwise, it will rollback the transaction. Binary log just work as a Write-ahead log between server and storage engines.</p>
+<p>Why does writing to the binlog become a performance bottleneck?</p>
+<p>Every committed transaction needs to write to the binlog on disk (if durability is crucial) and the storage engine log (i.e., redo log of InnoDB). Both the binlog and redo log must maintain the same order, which is a requirement for InnoDB hot backup. To meet this requirement, a global mutex called <code>prepare_commit_mutex</code> exists. The <code>prepare_commit_mutex</code> is held during the prepare phase of the InnoDB transaction and released upon commit. Since this mutex is global, concurrent transactions committing will be serialized on this mutex, ensuring that there is no chance of misordering between the binlog and InnoDB redo log.</p>
+<p>Another critical resource is the binlog file handler. Since there is only one thread that can hold this handler and write the binlog content generated from local transactions, and flush this content to disk using the handler, another mutex-like object should be used for this purpose. This mutex contention may be happend between non-transactional query and transaction-query.</p>
+<p>The binary log operation mentioned above causes disk IO, which can be expensive. Specifically, each transaction may result in a disk sync operation if the <code>sync_binlog</code> parameter is set to 1.</p>
+<h1 id="3-group-commit-as-the-solution">3. Group Commit as the Solution</h1>
+<h2 id="31-high-level-principle-of-group-commit">3.1 High-level principle of Group Commit</h2>
+<p>The main reason why binlog can become a bottleneck when MySQL server traffic is heavy is due to critical resource contention and redundant disk IO of binary log if it is enabled.</p>
+<p>Usually, compacting multiple disk sync operations into one is useful. Therefore, the high-level principle can be to consolidate these operations.</p>
+<p>The requirement for maintaining the identical order of binlog transactions and InnoDB transactions cannot be broken. However, instead of using mutex-like operating system facilities, using a queue can achieve the same consequence.</p>
+<p>So, the high-level principle of the Group commit can be summarized as follows:</p>
+<ol>
+<li>Use a queue-like data structure to maintain the same order of the commit transactions between the binlog and the storage engine.</li>
+<li>Compact the disk I/O operations.</li>
+</ol>
+<h2 id="32-key-parts-of-binlog-operation-during-transactions-commit">3.2 Key parts of binlog operation during transactions commit</h2>
+<p>When the client queries a commit statement, these tasks should be done sequentially:</p>
+<ol>
+<li>Fill the appropriate content into the binlog cache processed by the thread.</li>
+<li>Flush the localized binlog cache to the binlog handler.</li>
+<li>Invoke the sync() function of the binlog handler to write the binlog content to disk, ensuring durability.</li>
+<li>Perform commits per storage engine sequentially.</li>
+</ol>
+<h2 id="33-pipelining-the-key-stages-using-distinct-queues">3.3 Pipelining the key stages using distinct queues</h2>
+<p>To consolidate disk operations among multiple committing transactions while preserving their order, three identical queues are suggested: the flush queue, sync queue, and commit queue. These queues represent the flush stage, sync stage, and commit stage of a committing transaction state, respectively.</p>
+<p>When a THD issues a commit for a transaction, the thread will first join the flush queue. After completing the enqueue operation, the current THD will wait and be blocked until the entire commit is finished. If the enrolling THD is the first member of the flush queue, this thread will be assigned as the &rsquo;leader&rsquo; of the current group.</p>
+<p>The leader thread will then perform the remaining work and notify the follower THDs until the storage engine commits.</p>
+<p>The leader thread will flush the work for each THD in the flush queue one by one. Then, the leader thread will dequeue the flush queue and enqueue all pending THDs to the sync stage queue.</p>
+<p>In the sync state queue, the leader thread will acquire the binlog handler mutex. After that, the leader thread will acquire the flush stage queue mutex again to prevent new THDs from coming in. Therefore, the next thread that successfully acquires the flush queue mutex will become the new leader.</p>
+<p>After invoking the fsync() function of the binlog handler, all the storage engines should be committed in order. Consequently, the THDs will be moved from the sync stage queue to the commit stage queue and perform the engine commit one by one.</p>
+<p>The <code>sync_binlog</code> server parameter controls the frequency of fsync() operations. In reality, this parameter functions as a counter. In MySQL 5.6 and previous versions, the fsync() function is invoked every <code>sync_binlog</code> number of transaction commits.</p>
+<p>However, in the group commit implementation, <code>sync_binlog</code> indicates the number of leader threads that perform the sync operation before actually performing the fsync(). In other words, this value represents the group number rather than the transaction number.</p>
+		</div>
+		<footer class="post__footer">
+			
+<div class="post__tags tags clearfix">
+	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item">
+			<a class="tags__link btn" href="/tags/mysql/" rel="tag">MySQL</a>
+		</li>
+	</ul>
+</div>
+		</footer>
+	</article>
+</main>
+
+
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023 Summerxwu Xia W..
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/js/menu.js"></script>
+</body>
+</html>
